@@ -8,7 +8,7 @@ key_matr_4x4 = [[4, 7, 14, 2], [5, 6, 11, 8], [11, 19, 17, 12], [13, 14, 15, 16]
 def char_to_index(char, alph): # Перевод алфавита в численные значения
     return alph.index(char)
 def index_to_char(index, alph): # Перевод численного значения в символ алфавита
-    return alph[index % len(alph)]
+    return alph[index]
 def mult_matrix(msg, key, alph_len): # Функция для перемножения матриц
     res = []
     for row in key:
@@ -46,17 +46,18 @@ def random_change(message,alph):
         message[index_change]=random_char
     return ''.join(message)
 
-def inv_det(det,mod): # Вспомогательная функция, которая находит обратный элемент определителя
-    det=det%mod
-    for x in range(1,mod):
-        if (det*x)%mod==1:
+def inv_det(det, mod):
+    det = det % mod
+    for x in range(1, mod):
+        if (det * x) % mod == 1:
             return x
-    raise ValueError('это гг')
-def inv_matrix(matr,mod): # Функция для нахождения обратной матрицы
-    deter=round(np.linalg.det(matr))
-    det_inv=inv_det(deter,mod)
-    adju=np.round(deter*np.linalg.inv(matr)).astype(int)
-    return (det_inv*adju)%mod
+    raise ValueError('Обратного элемента не существует')
+
+def inv_matrix(matr, mod):
+    deter = round(np.linalg.det(matr))
+    det_inv = inv_det(deter, mod)
+    adju = np.round(deter * np.linalg.inv(matr)).astype(int)
+    return (det_inv * adju) % mod
 def hill_decrypt(encrypt_msg,key,alph): # Расшифорвка сообщения по аналогии с зашифровкой
     alph_len=len(alph)
     block_size=len(key)
@@ -86,3 +87,49 @@ print("\nРасшифрованные сообщения без вторжени
 print(f"2x2: {decrypted_2x2}")
 print(f"3x3: {decrypted_3x3}")
 print(f"4x4: {decrypted_4x4}")
+def gen_key(size,mod):
+    while True:
+        matrix = np.random.randint(1, mod, size=(size, size))
+        if np.gcd(int(round(np.linalg.det(matrix))), mod) == 1:
+            return matrix
+rand_key_2x2=gen_key(2,35)
+print(rand_key_2x2)
+
+first_msg='я тебя люблю'
+sec_msg='а я тебя нет'
+enc_first_msg=hill_cipher_encrypt(first_msg,rand_key_2x2,alph)
+print(len(first_msg),len(sec_msg),len(enc_first_msg))
+enc_sec_msg=hill_cipher_encrypt(sec_msg,rand_key_2x2,alph)
+
+
+def from_msg_to_mat(message, block_size, alphabet):
+    if len(message) % block_size != 0:
+        message += ' ' * (block_size - len(message) % block_size)
+
+    matrix = []
+    for i in range(0, len(message), block_size):
+        block = message[i:i + block_size]
+        block_indexes = [char_to_index(char, alphabet) for char in block]
+        matrix.append(block_indexes)
+
+    return np.array(matrix).T
+
+
+def find_key(orig_msg, encrypt_msg, alph, block_size):
+    orig_msg_matr = from_msg_to_mat(orig_msg, block_size, alph)
+    encrypt_msg_matr = from_msg_to_mat(encrypt_msg, block_size, alph)
+    orig_block = orig_msg_matr[:, :block_size]
+    enc_block = encrypt_msg_matr[:, :block_size]
+    print(orig_block,')')
+    inv_orig_block = inv_matrix(orig_block, len(alph))
+
+    key_matr = np.dot(enc_block, inv_orig_block)
+
+    return key_matr.astype(int)
+
+
+# Пример использования
+rec_key=(find_key(first_msg, enc_first_msg, alph, 2))
+print(rec_key)
+decr_sec_msg=hill_decrypt(enc_sec_msg,rec_key,alph)
+print(decr_sec_msg)
