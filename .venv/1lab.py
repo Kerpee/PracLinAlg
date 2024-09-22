@@ -162,7 +162,7 @@ H = np.array([
 ], dtype=int)
 def encode_word(word,G):
     bin_msg=''.join([char_to_bin[char] for char in word])
-    blocks=[bin_msg[i:i+4] for i in range(0,len(message),4)]
+    blocks=[bin_msg[i:i+4] for i in range(0,len(bin_msg),4)]
     enc_blocks=[]
     for block in blocks:
         desp_block=np.array([int(bit)for bit in block],dtype=int)
@@ -204,12 +204,15 @@ def decoding(enc_msg, H):
         corr_block = fix_error(block, error)
         dec_msg += ''.join(corr_block[:4])  # Используем только первые 4 бита
 
-    # Проверяем, что каждый блок из 5 битов
+    # Проверяем, что каждый блок из 5 битов и восстанавливает символы из блоков
     decoded_chars = []
-    for i in range(0, len(dec_msg), 4):
-        block = dec_msg[i:i + 4]
+    for i in range(0, len(dec_msg), 5):
+        block = dec_msg[i:i + 5]
+        decoded_chars.append(bin_to_char[block])
     return ''.join(decoded_chars)
-#msg=encode_word('пчел',G)
-#err_msg=make_err(1,msg)
-#dec_msg=decoding(err_msg,H)
-#print(dec_msg)
+msg=encode_word('пчел',G)
+print(msg)
+err_msg=make_err(1,msg)
+print(err_msg)
+dec_msg=decoding(err_msg,H)
+print(dec_msg)
