@@ -142,11 +142,21 @@ except ValueError as e:
     print(f"Ошибка при расшифровке: {e}")
 
 
-# 3 ЗАДАНИЕ( В ПРОЦЕССЕ ОСОЗНАНИЯ И ДОДЕЛЫВАНИЯ)
+
+
+# 3 ЗАДАНИЕ
+import numpy as np
+import random
+
+# Алфавит
 alph = 'йцукенгшщзхъфывапролджэячсмитьбю'
 
+#словарь, который сопоставляет каждому символу его двоичное представление в виде строки длиной 5 бит (например, 'й' → '00000')
 char_to_bin = {char: format(i, '05b') for i, char in enumerate(alph)}
+#обратный словарь, преобразующий 5-битные двоичные строки обратно в символы (например, '00000' → 'й').
 bin_to_char = {v: k for k, v in char_to_bin.items()}
+
+#Генерирующая матрица, которая преобразует 4-битные блоки данных в 7-битные кодовые слова. Она используется для кодирования
 G = np.array([
     [1, 0, 0, 0, 1, 1, 1],
     [0, 1, 0, 0, 1, 1, 0],
@@ -154,65 +164,105 @@ G = np.array([
     [0, 0, 0, 1, 0, 1, 1]
 ], dtype=int)
 
-# Проверочная матрица H для кода Хэмминга (7,4)
+#Проверочная матрица, которая используется для обнаружения и исправления ошибок при декодировании.
 H = np.array([
     [1, 1, 1, 0, 1, 0, 0],
     [1, 1, 0, 1, 0, 1, 0],
     [1, 0, 1, 1, 0, 0, 1]
 ], dtype=int)
-def encode_word(word,G):
-    bin_msg=''.join([char_to_bin[char] for char in word])
-    blocks=[bin_msg[i:i+4] for i in range(0,len(bin_msg),4)]
-    enc_blocks=[]
+
+
+def encode_word(word, G):
+    #Преобразуем слово в бинарный код, используя char_to_bin
+    bin_msg = ''.join([char_to_bin[char] for char in word])
+    print('Бинарное сообщение:', bin_msg)
+
+    #Разбиваем бинарное сообщение на 4-битные блоки.
+    blocks = [bin_msg[i:i + 4] for i in range(0, len(bin_msg), 4)]
+
+    #Кодируем каждый блок, умножая на матрицу G и беря результат по модулю 2.
+    enc_blocks = []
     for block in blocks:
-        desp_block=np.array([int(bit)for bit in block],dtype=int)
-        enc_block=np.dot(desp_block,G)%2
-        enc_blocks.append(''.join(map(str,enc_block)))
+        data_bits = np.array([int(bit) for bit in block], dtype=int)
+        enc_block = np.dot(data_bits, G) % 2
+        enc_blocks.append(''.join(map(str, enc_block)))
+    #Возвращаем закодированное сообщение как объединение всех закодированных блоков.
     return ''.join(enc_blocks)
-def make_err(num_err,msg):
-    arr_msg=list(msg)
-    leng=len(arr_msg)
+
+
+def make_err(num_err, msg):
+    arr_msg = list(msg)#Списковое представление сообщения
+    leng = len(arr_msg)#Длина сообщения
+    #Генерация ошибки зависит от num_err - введенного количества ошибок
     for _ in range(num_err):
-        rand_pos=random.randint(0,leng-1)
-        if arr_msg[rand_pos] == '1':
-            arr_msg[rand_pos]='0'
-        else:
-            arr_msg[rand_pos]='1'
+        #Генерация рандомной позиции для ошибки
+        rand_pos = random.randint(0, leng - 1)
+        #Инвертирования бита на месте ошибки
+        arr_msg[rand_pos] = '0' if arr_msg[rand_pos] == '1' else '1'
     return ''.join(arr_msg)
 
 
-def find_error(msg,H):
-    error=np.array([int(bit) for bit in msg],dtype=int)
-    corr_err=np.dot(H,error)%2
-    return ''.join(map(str,corr_err))
-def fix_error(msg,err):
-    err_pos=int(err,2)
-    if err_pos>0:
-        corr=list(msg)
-        corr[err_pos - 1] = '0' if corr[err_pos - 1] == '1' else '1'
-        return ''.join(corr)
-    return msg
+def find_error(block, H):
+    #Преобразуем блок в массив чисел.
+    block_vector = np.array([int(bit) for bit in block], dtype=int)
+
+    #Вычисляем синдром ошибки как произведение H * block по модулю 2.
+    syndrome = np.dot(H, block_vector) % 2  #Синдром ошибки показывает, в какой позиции произошла ошибка.
+    return syndrome
+
+
+def correct_error(block, syndrome):
+    #Преобразование блока сообщения в массив чисел
+    block = np.array([int(bit) for bit in block], dtype=int)
+
+    #Сравниваем синдром ошибки с каждым столбцом матрицы H.
+    for i in range(7):
+        if np.array_equal(H[:, i], syndrome):
+
+            #Если совпадение найдено, инвертирует соответствующий бит в блоке.
+            block[i] = 1 - block[i]
+            break
+
+    #Возвращаем исправленный блок.
+    return block
 
 
 def decoding(enc_msg, H):
-    length = len(enc_msg)
-    num_blocks = length // 7
+    length = len(enc_msg)#Длина зашифрованного сообщения
+    num_blocks = length // 7#Количество блоков в зашифрованном сообщении
     dec_msg = ''
-    for i in range(0, num_blocks):
-        block = enc_msg[i * 7:(i + 1) * 7]
-        error = find_error(block, H)
-        corr_block = fix_error(block, error)
-        dec_msg += ''.join(corr_block[:4])  # Используем только первые 4 бита
 
-    # Проверяем, что каждый блок из 5 битов и восстанавливает символы из блоков
+    for i in range(num_blocks):
+        # Разделение сообщения на блоки
+        block = enc_msg[i * 7:(i + 1) * 7]
+
+        #Поиск ошибки, выявление синдрома
+        syndrome = find_error(block, H)
+
+        # Проверка наличия ошибки
+        if np.any(syndrome):
+            #Исправление ошибки в блоке сообщения
+            block = correct_error(block, syndrome)
+
+        # Добавление исправленного блока
+        dec_msg += ''.join(map(str, block[:4]))  # Используем только первые 4 бита
+
+    # Преобразование двоичного кода обратно в символы
     decoded_chars = []
     for i in range(0, len(dec_msg), 5):
-        block = dec_msg[i:i + 5]
-        decoded_chars.append(bin_to_char[block])
+        char_bin = dec_msg[i:i + 5]
+        decoded_chars.append(bin_to_char[char_bin])
+
     return ''.join(decoded_chars)
-msg=encode_word('пчел',G)
-print(msg)
-err_msg=make_err(1,msg)
-print(err_msg)
-dec_msg=decoding(err_msg,H)
-print(dec_msg)
+
+
+
+msg = encode_word('пчел', G)
+print("Закодированное сообщение:", msg)
+
+err_msg = make_err(4, msg)
+print("Сообщение с ошибкой:", err_msg)
+
+dec_msg = decoding(err_msg, H)
+print("Декодированное сообщение:", dec_msg)
+
