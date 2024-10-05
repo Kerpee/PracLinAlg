@@ -141,12 +141,143 @@ unit_circle = np.array([np.cos(theta), np.sin(theta)]).T
 M_scale = np.array([[np.sqrt(c), 0], [0, np.sqrt(c)]])
 scaled_circle = unit_circle @ M_scale.T
 plt.figure(figsize=(6, 6))
-plt.plot(unit_circle[:, 0], unit_circle[:, 1], 'b-', label="Unit Circle")
-plt.plot(scaled_circle[:, 0], scaled_circle[:, 1], 'r-', label=f"Circle with Area {c}")
+plt.plot(unit_circle[:, 0], unit_circle[:, 1], 'b-', label="Единичная окружность")
+plt.plot(scaled_circle[:, 0], scaled_circle[:, 1], 'r-', label=f"Окружность с радиусом {c}")
 plt.xlim([-3, 3])
 plt.ylim([-3, 3])
 plt.gca().set_aspect('equal', adjustable='box')
 plt.grid(True)
 plt.legend()
-plt.title("Scaling Unit Circle to Area c")
+plt.title(f"Окружность с радиусом {c}")
+plt.show()
+
+# 10 задание
+
+theta = np.linspace(0, 2*np.pi, 100)
+circle = np.array([np.cos(theta), np.sin(theta)]).T
+s_x, s_y = 1, 2
+M_ellipse = np.array([[s_x, 0], [0, s_y]])
+ellipse = circle @ M_ellipse.T
+plt.figure(figsize=(6, 6))
+plt.plot(circle[:, 0], circle[:, 1], 'b-', label="Круг единичной площади")
+plt.plot(ellipse[:, 0], ellipse[:, 1], 'r-', label="Некруг")
+plt.xlim([-3, 3])
+plt.ylim([-3, 3])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Отображение круга единичной площади в некруг")
+plt.show()
+
+#11 задние
+M_11 = np.array([[2, 1], [1, 2]])
+transformed_fig = fig @ M_11.T
+
+plt.figure(figsize=(6, 6))
+plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
+plt.plot(transformed_fig[:, 0], transformed_fig[:, 1], 'r-', label="Перпендикулярные собственные вектора")
+plt.xlim([-12, 12])
+plt.ylim([-12, 12])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Отображение с перпендикулярными собственными векторами")
+plt.show()
+
+# 12 задание
+
+# Треугольная матрица
+M_12 = np.array([[2, 1], [0, 2]])
+
+transformed_fig_single = fig @ M_12.T
+plt.figure(figsize=(6, 6))
+plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
+plt.plot(transformed_fig_single[:, 0], transformed_fig_single[:, 1], 'r-', label="Один собственный вектор")
+plt.xlim([-12, 12])
+plt.ylim([-12, 12])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Отображение без двух неколлинеарных собственных векторов")
+plt.show()
+
+# 13 задание
+
+#14 задание
+M_14 = np.array([[3, 0], [0, 3]])
+
+# Преобразование фигуры
+transformed_fig = fig @ M_14.T
+
+# Визуализация
+plt.figure(figsize=(6, 6))
+plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
+plt.plot(transformed_fig[:, 0], transformed_fig[:, 1], 'r-', label="Гомотетическое отображение")
+plt.xlim([-12, 12])
+plt.ylim([-12, 12])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Отображение, при котором любой вектор является собственным")
+plt.show()
+
+# 15 задание
+# Матрицы A и B
+A = M_rotation
+B = np.array([[2, 0], [0, 1]])
+
+# AB и BA
+AB = A @ B
+BA = B @ A
+
+transformed_A = fig @ A.T
+transformed_B = fig @ B.T
+transformed_AB = fig @ AB.T
+transformed_BA = fig @ BA.T
+
+# Визуализация
+plt.figure(figsize=(6, 6))
+plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
+plt.plot(transformed_A[:, 0], transformed_A[:, 1], 'b-', label="A")
+plt.plot(transformed_B[:, 0], transformed_B[:, 1], 'p-', label="B")
+plt.plot(transformed_AB[:, 0], transformed_AB[:, 1], 'r-', label="AB")
+plt.plot(transformed_BA[:, 0], transformed_BA[:, 1], 'g-', label="BA")
+plt.xlim([-12, 12])
+plt.ylim([-12, 12])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Пара отображений: AB ≠ BA")
+plt.show()
+
+#16 задание
+A = np.array([[2, 0], [0, 1]])
+B = np.array([[1, 0], [0, 3]])
+
+AB = A @ B
+BA = B @ A
+transformed_A=fig@A.T
+transformed_B=fig@B.T
+transformed_AB = fig @ AB.T
+transformed_BA = fig @ BA.T
+
+# Визуализация
+plt.figure(figsize=(6, 6))
+plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
+plt.plot(transformed_AB[:, 0], transformed_AB[:, 1], 'r-', label="AB")
+plt.plot(transformed_BA[:, 0], transformed_BA[:, 1], 'g-', label="BA")
+plt.plot(transformed_A[:, 0], transformed_A[:, 1], 'g-', label="A")
+plt.plot(transformed_B[:, 0], transformed_B[:, 1], 'g-', label="B")
+plt.xlim([-12, 12])
+plt.ylim([-12, 12])
+plt.axhline(0, color='black', linewidth=0.5, linestyle='--')
+plt.axvline(0, color='black', linewidth=0.5, linestyle='--')
+plt.grid(True)
+plt.legend()
+plt.title("Пара отображений: AB = BA")
 plt.show()
