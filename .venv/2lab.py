@@ -258,14 +258,12 @@ plt.show()
 #16 задание
 A = np.array([[2, 0], [0, 1]])
 B = np.array([[1, 0], [0, 3]])
-
 AB = A @ B
 BA = B @ A
 transformed_A=fig@A.T
 transformed_B=fig@B.T
 transformed_AB = fig @ AB.T
 transformed_BA = fig @ BA.T
-
 # Визуализация
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
