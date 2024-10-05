@@ -9,7 +9,7 @@ fig = np.array([[1, 2], [3, -1], [-2, -2],[-2,1], [1, 2]])
 
 # 1 задание
 M_reflection = np.array([[-8/10, 6/10], [6/10, 8/10]])
-rect_reflection = fig @ M_reflection
+rect_reflection = fig @ M_reflection.T
 
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="")
@@ -24,7 +24,7 @@ plt.title("Отражение относительно y=3x")
 
 M_projection = np.array([[1/26, 5/26], [5/26, 25/26]])
 
-rect_projection = fig @ M_projection
+rect_projection = fig @ M_projection.T
 
 # Визуализация
 plt.figure(figsize=(6, 6))
@@ -40,7 +40,7 @@ plt.title("Отображение в прямую y = 5x")
 # 3 задание
 theta=40
 M_rotation = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
-quad_rotation = fig @ M_rotation
+quad_rotation = fig @ M_rotation.T
 print(quad_rotation)
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
@@ -54,7 +54,7 @@ plt.title("Поворот на 40 градусов")
 
 # Задание 4
 M_central_symmetry = np.array([[-1, 0], [0, -1]])
-quad_central_symmetry = fig @ M_central_symmetry
+quad_central_symmetry = fig @ M_central_symmetry.T
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
 plt.plot(quad_central_symmetry[:, 0], quad_central_symmetry[:, 1], 'r-', label="Симметрия")
@@ -71,7 +71,7 @@ plt.title("Симметрия")
 help_M=rect_reflection
 theta=10*d
 M_rotation = np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
-ans_M=rect_reflection@M_rotation
+ans_M=rect_reflection@M_rotation.T
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырехугольник")
 plt.plot(help_M[:, 0], help_M[:, 1], 'r--', label="Отражение относительно y = 3x")
@@ -88,7 +88,7 @@ plt.title("Повернутое отражение")
 # Задание 6
 
 M_6=np.array([[1,1],[a,b]])
-new_fig=fig@M_6
+new_fig=fig@M_6.T
 print(new_fig)
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
@@ -105,7 +105,7 @@ plt.title("ab")
 # Задание 7
 M_7=(np.linalg.inv(M_6))
 print(M_7)
-new_fig_7=fig@M_7
+new_fig_7=fig@M_7.T
 print(new_fig_7)
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
@@ -122,7 +122,7 @@ plt.show()
 M_8=M_7@M_6
 print(M_8)
 M_8 = np.array([[1, 0], [(b - a) / a, b / a]])
-new_fig_8=fig@M_8
+new_fig_8=fig@M_8.T
 print(new_fig_8)
 plt.figure(figsize=(6, 6))
 plt.plot(fig[:, 0], fig[:, 1], 'b-', label="Четырёхугольник")
