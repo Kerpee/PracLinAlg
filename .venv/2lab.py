@@ -155,7 +155,8 @@ plt.show()
 
 theta = np.linspace(0, 2*np.pi, 100)
 circle = np.array([np.cos(theta), np.sin(theta)]).T
-s_x, s_y = 1, 2
+s_x =(d/np.pi)
+s_y = 1
 M_ellipse = np.array([[s_x, 0], [0, s_y]])
 ellipse = circle @ M_ellipse.T
 plt.figure(figsize=(6, 6))
