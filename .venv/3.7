@@ -1,0 +1,88 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+# Матрица перспективы
+def perspective(fov, aspect_ratio, near, far):
+    S = 1 / np.tan(np.radians(fov) / 2)
+    P = np.array([
+        [S, 0, 0, 0],
+        [0, S * aspect_ratio, 0, 0],
+        [0, 0, (far + near) / (far - near), -2 * far * near / (far - near)],
+        [0, 0, 1, 0]
+    ])
+    return P
+
+# Отображение куба
+def draw_shape(vertices, faces, color, ax):
+    # Нормализация координат (делим на W)
+    vertices = (vertices[:3, :] / vertices[3, :]).T
+    ax.add_collection3d(Poly3DCollection(vertices[faces], facecolors=color, edgecolors='k', linewidths=0.5))
+
+# Вершины и грани куба
+def create_cube(scale=1):
+    vertices = np.array([
+        [-1, 1, 1, -1, -1, 1, 1, -1],
+        [-1, -1, 1, 1, -1, -1, 1, 1],
+        [-1, -1, -1, -1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1]
+    ]) * scale
+    faces = np.array([
+        [0, 1, 5, 4],
+        [1, 2, 6, 5],
+        [2, 3, 7, 6],
+        [3, 0, 4, 7],
+        [0, 1, 2, 3],
+        [4, 5, 6, 7]
+    ])
+    return vertices, faces
+
+# Настройка сцены
+fov = 90  # Угол обзора
+aspect_ratio = 1  # Соотношение сторон
+near, far = 1, 10  # Ближняя и дальняя плоскости
+P = perspective(fov, aspect_ratio, near, far)
+
+# Создаём три куба разного масштаба
+vertices_cube1, faces_cube1 = create_cube(scale=2)  # Большой куб
+vertices_cube2, faces_cube2 = create_cube(scale=1.5)  # Средний куб
+vertices_cube3, faces_cube3 = create_cube(scale=1)  # Маленький куб
+
+# Применяем трансформации
+vertices_cube1 = np.array([[1, 0, 0, -3],
+                           [0, 1, 0, 0],
+                           [0, 0, 1, -2],
+                           [0, 0, 0, 1]]) @ vertices_cube1
+
+vertices_cube2 = np.array([[1, 0, 0, 0],
+                           [0, 1, 0, 0],
+                           [0, 0, 1, -3],
+                           [0, 0, 0, 1]]) @ vertices_cube2
+
+vertices_cube3 = np.array([[1, 0, 0, 3],
+                           [0, 1, 0, 0],
+                           [0, 0, 1, -4],
+                           [0, 0, 0, 1]]) @ vertices_cube3
+
+# Применяем матрицу перспективы
+vertices_cube1 = P @ vertices_cube1
+vertices_cube2 = P @ vertices_cube2
+vertices_cube3 = P @ vertices_cube3
+
+# Визуализация
+fig = plt.figure()
+ax = fig.add_subplot(projection='3d')
+draw_shape(vertices_cube1, faces_cube1, 'cyan', ax)
+draw_shape(vertices_cube2, faces_cube2, 'blue', ax)
+draw_shape(vertices_cube3, faces_cube3, 'green', ax)
+
+# Настройка графика
+ax.set_box_aspect([1, 1, 1])  # Равномерные оси
+ax.set_xlim(-1, 1)
+ax.set_ylim(-1, 1)
+ax.set_zlim(-1, 1)
+
+# Вращение вида для лучшего ракурса
+ax.view_init(azim=-30, elev=20)
+
+plt.show()
