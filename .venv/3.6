@@ -1,0 +1,113 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+
+# Функция для построения куба
+def draw_cube(ax, vertices, faces, color, alpha=0.8):
+    vertices = vertices[:3, :].T  # Преобразуем гомогенные координаты в 3D
+    for face in faces:
+        poly = Poly3DCollection([vertices[face]])
+        poly.set_color(color)
+        poly.set_alpha(alpha)
+        ax.add_collection3d(poly)
+
+
+# Вершины куба в гомогенных координатах
+vertices_cube = np.array([
+    [-1, 1, 1, -1, -1, 1, 1, -1],
+    [-1, -1, 1, 1, -1, -1, 1, 1],
+    [-1, -1, -1, -1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1]  # Гомогенная компонента
+])
+
+# Грани куба
+faces_cube = np.array([
+    [0, 1, 5, 4],
+    [1, 2, 6, 5],
+    [2, 3, 7, 6],
+    [3, 0, 4, 7],
+    [0, 1, 2, 3],
+    [4, 5, 6, 7]
+])
+
+
+# Функция перемещения куба
+def translate(vertices, tx, ty, tz):
+    T = np.array([
+        [1, 0, 0, tx],
+        [0, 1, 0, ty],
+        [0, 0, 1, tz],
+        [0, 0, 0, 1]
+    ])
+    return T @ vertices
+
+
+# Функция масштабирования
+def scale(vertices, sx, sy, sz):
+    S = np.array([
+        [sx, 0, 0, 0],
+        [0, sy, 0, 0],
+        [0, 0, sz, 0],
+        [0, 0, 0, 1]
+    ])
+    return S @ vertices
+
+
+# Матрица камеры
+def camera_matrix(position, rotation_angle):
+    # Матрица перемещения камеры (перемещает камеру в начало координат)
+    T_camera = np.array([
+        [1, 0, 0, -position[0]],
+        [0, 1, 0, -position[1]],
+        [0, 0, 1, -position[2]],
+        [0, 0, 0, 1]
+    ])
+
+    # Матрица поворота камеры (вращает вокруг оси Y)
+    R_camera = np.array([
+        [np.cos(rotation_angle), 0, np.sin(rotation_angle), 0],
+        [0, 1, 0, 0],
+        [-np.sin(rotation_angle), 0, np.cos(rotation_angle), 0],
+        [0, 0, 0, 1]
+    ])
+
+    # Итоговая матрица
+    return R_camera @ T_camera
+
+
+# Размещение нескольких кубов
+cube1 = translate(vertices_cube, 3, 0, 0)  # Куб 1
+cube2 = translate(vertices_cube, -3, 0, 0)  # Куб 2
+cube3 = translate(scale(vertices_cube, 0.5, 0.5, 0.5), 0, 2, 0)  # Куб 3 (уменьшен)
+cube4 = translate(scale(vertices_cube, 1.5, 1.5, 1.5), 0, -3, 0)  # Куб 4 (увеличен)
+
+# Объединяем все кубы в одну сцену
+scene = [cube1, cube2, cube3, cube4]
+
+# Параметры камеры
+camera_position = np.array([1, -1, 1])  # Позиция камеры
+camera_rotation_angle = np.radians(45)  # Поворот камеры на 45 градусов
+
+# Матрица обратного преобразования камеры
+C_inv = camera_matrix(camera_position, camera_rotation_angle)
+
+# Применяем обратное преобразование ко всем объектам сцены
+transformed_scene = [C_inv @ cube for cube in scene]
+
+# Отрисовка сцены с преобразованием
+fig = plt.figure(figsize=(12, 6))
+ax = fig.add_subplot(111, projection='3d')
+
+# Рисуем каждый куб из преобразованной сцены
+colors = ['red', 'blue', 'green', 'orange']
+for cube, color in zip(transformed_scene, colors):
+    draw_cube(ax, cube, faces_cube, color)
+
+# Настройки вида и осей
+ax.set_box_aspect([1, 1, 1])
+ax.set_xlim(-10, 10)
+ax.set_ylim(-10, 10)
+ax.set_zlim(-10, 10)
+ax.view_init(azim=0, elev=-90)  # Смотрим "снизу"
+plt.show()
